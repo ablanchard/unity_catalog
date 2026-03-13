@@ -9,6 +9,7 @@
 #pragma once
 
 #include "storage/uc_table_entry.hpp"
+#include "uc_api.hpp"
 
 namespace duckdb {
 struct CreateTableInfo;
@@ -24,7 +25,7 @@ public:
 public:
 	optional_ptr<CatalogEntry> GetVersion(ClientContext &context, const EntryLookupInfo &lookup);
 	optional_ptr<Catalog> GetInternalCatalog();
-	void RefreshCredentials(ClientContext &context);
+	void RefreshCredentials(ClientContext &context, UCAPIOperationType operation = UCAPIOperationType::READ);
 	void InternalAttach(ClientContext &context);
 	void InternalDetach(ClientContext &context);
 

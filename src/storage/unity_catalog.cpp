@@ -128,7 +128,7 @@ PhysicalOperator &UnityCatalog::PlanInsert(ClientContext &context, PhysicalPlanG
 
 	// LOAD THE INTERNAL TABLE ENTRY
 	auto internal_catalog = table.GetInternalCatalog();
-	table.RefreshCredentials(context);
+	table.RefreshCredentials(context, UCAPIOperationType::READ_WRITE);
 	return internal_catalog->PlanInsert(context, planner, op, plan);
 }
 

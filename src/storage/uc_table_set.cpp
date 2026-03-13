@@ -68,14 +68,14 @@ optional_ptr<Catalog> TableInformation::GetInternalCatalog() {
 	return internal_attached_database->GetCatalog();
 }
 
-void TableInformation::RefreshCredentials(ClientContext &context) {
+void TableInformation::RefreshCredentials(ClientContext &context, UCAPIOperationType operation) {
 	D_ASSERT(table_data);
 	if (table_data->storage_location.find("file://") == 0) {
 		return;
 	}
 	auto &secret_manager = SecretManager::Get(context);
 	// Get Credentials from UCAPI
-	auto table_credentials = UCAPI::GetTableCredentials(context, table_data->table_id, catalog.credentials);
+	auto table_credentials = UCAPI::GetTableCredentials(context, table_data->table_id, catalog.credentials, operation);
 
 	// Inject secret into secret manager scoped to this path
 	CreateSecretInput input;
