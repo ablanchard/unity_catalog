@@ -12,6 +12,17 @@
 
 namespace duckdb {
 
+const char *UCAPIOperationTypeToString(UCAPIOperationType operation) {
+	switch (operation) {
+	case UCAPIOperationType::READ:
+		return "READ";
+	case UCAPIOperationType::READ_WRITE:
+		return "READ_WRITE";
+	default:
+		throw InternalException("Unknown UCAPIOperationType");
+	}
+}
+
 static void AuthenticateViaBearerToken(HTTPHeaders &hdrs, const string &token) {
 	if (!token.empty()) {
 		hdrs.Insert("Authorization", "Bearer " + token);
@@ -115,12 +126,13 @@ static UCAPIError CheckError(duckdb_yyjson::yyjson_val *api_result) {
 }
 
 static string GetCredentialsRequest(ClientContext &ctx, const string &url, const string &table_id,
-                                    const string &token = "") {
+                                    UCAPIOperationType operation, const string &token = "") {
 	auto db = ctx.db;
 	auto &http_util = HTTPUtil::Get(*db);
 	auto params = http_util.InitializeParameters(*db, url);
 
-	string body = StringUtil::Format(R"({"table_id" : "%s", "operation" : "READ_WRITE"})", table_id);
+	string body = StringUtil::Format(R"({"table_id" : "%s", "operation" : "%s"})", table_id,
+	                                 UCAPIOperationTypeToString(operation));
 	HTTPHeaders hdrs(*db);
 	hdrs.Insert("Content-Type", "application/json");
 	AuthenticateViaBearerToken(hdrs, token);
@@ -179,11 +191,12 @@ string UCAPI::GetDefaultSchema(ClientContext &ctx, const UCCredentials &credenti
 }
 
 UCAPITableCredentials UCAPI::GetTableCredentials(ClientContext &ctx, const string &table_id,
-                                                 const UCCredentials &credentials) {
+                                                 const UCCredentials &credentials,
+                                                 UCAPIOperationType operation) {
 	UCAPITableCredentials result;
 
 	auto url = credentials.endpoint + "/api/2.1/unity-catalog/temporary-table-credentials";
-	auto api_result = GetCredentialsRequest(ctx, url, table_id, credentials.token);
+	auto api_result = GetCredentialsRequest(ctx, url, table_id, operation, credentials.token);
 
 	// Read JSON and get root
 	duckdb_yyjson::yyjson_doc *doc = duckdb_yyjson::yyjson_read(api_result.c_str(), api_result.size(), 0);

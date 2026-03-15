@@ -49,10 +49,19 @@ struct UCAPITableCredentials {
 	string session_token;
 };
 
+enum class UCAPIOperationType {
+	READ,
+	READ_WRITE
+};
+
+//! Convert a UCAPIOperationType to its string representation for the UC API
+const char *UCAPIOperationTypeToString(UCAPIOperationType operation);
+
 class UCAPI {
 public:
 	static UCAPITableCredentials GetTableCredentials(ClientContext &ctx, const string &table_id,
-	                                                 const UCCredentials &credentials);
+	                                                 const UCCredentials &credentials,
+	                                                 UCAPIOperationType operation = UCAPIOperationType::READ);
 	static string GetDefaultSchema(ClientContext &ctx, const UCCredentials &credentials);
 	static vector<string> GetCatalogs(ClientContext &ctx, Catalog &catalog, const UCCredentials &credentials);
 	static vector<UCAPITable> GetTables(ClientContext &ctx, Catalog &catalog, const string &schema,
